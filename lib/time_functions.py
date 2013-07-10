@@ -12,7 +12,16 @@ def gps_from_location(location):
     json_obj = json.loads(json_string)
     lat = json_obj['results'][0]['geometry']['location']['lat']
     long = json_obj['results'][0]['geometry']['location']['lng']
-    return "%s,%s" % (lat, long)
+    return (lat, long)
+
+def timezone_from_gps(lat, long):
+    """ Returns the timezone of the latitude and longitude """
+
+    url = "https://maps.googleapis.com/maps/api/timezone/json?location=%s,%s&timestamp=1331161200&sensor=false"
+    data = urllib2.urlopen(url % (lat, long))
+    json_string = data.read()
+    json_obj = json.loads(json_string)
+    return json_obj['timeZoneId']
 
 def utc_time_from_timezone(date_time,timezone):
     """ Returns the UTC datetime from a datetime in a different timezone """
