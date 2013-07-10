@@ -13,3 +13,9 @@ def gps_from_location(location):
     lat = json_obj['results'][0]['geometry']['location']['lat']
     long = json_obj['results'][0]['geometry']['location']['lng']
     return "%s,%s" % (lat, long)
+
+def utc_time_from_timezone(date_time,timezone):
+    """ Returns the UTC datetime from a datetime in a different timezone """
+
+    tz = pytz.timezone(timezone)
+    return pytz.utc.localize(date_time).astimezone(tz)
