@@ -90,6 +90,8 @@ def process_repo(url, multiple=False):
             'name': i['name'],
             'fork': i['fork'],
             'url': i['url'],
+            'language':'',
+            'created':''
         }
         if 'language' in i: dets['language'] = i['language']
         if 'created_at' in i: dets['created'] = i['created_at']
