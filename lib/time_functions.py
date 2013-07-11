@@ -3,6 +3,7 @@ import datetime
 import urllib2
 import json
 
+
 def gps_from_location(location):
     """ Returns a tuple with latitude and longitude of the location provided """
 
@@ -14,6 +15,7 @@ def gps_from_location(location):
     long = json_obj['results'][0]['geometry']['location']['lng']
     return (lat, long)
 
+
 def timezone_from_gps(lat, long):
     """ Returns the timezone of the latitude and longitude """
 
@@ -23,7 +25,8 @@ def timezone_from_gps(lat, long):
     json_obj = json.loads(json_string)
     return json_obj['timeZoneId']
 
-def utc_time_from_timezone(date_time,timezone):
+
+def utc_time_from_timezone(date_time, timezone):
     """ Returns the UTC datetime from a datetime in a different timezone """
 
     tz = pytz.timezone(timezone)

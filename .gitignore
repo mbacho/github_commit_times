@@ -6,3 +6,5 @@
 *.pyc
 *.pyo
 
+#log folder
+logs/*
