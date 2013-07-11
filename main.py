@@ -134,20 +134,23 @@ def main(user='', repo='', logfile=''):
     if type(logfile) is not file:
         game_over('nowhere to log')
 
+    print 'gotten',len(repo_dets),'repos'
+    csv__writer = writer(logfile, delimiter=',', quoting=QUOTE_MINIMAL)
+    #output format : reponame, language, committer, login, time
+    csv__writer.writerow(['reponame','language', 'committer', 'login', 'time'])
+
     for i in repo_dets:
         commits = extract_commits(i)
-        csv__writer = writer(logfile, delimiter=',', quoting=QUOTE_MINIMAL)
-        #output format : reponame, committer, login, time
-        csv__writer.writerow(['reponame', 'committer', 'login', 'time'])
         #TODO when reading this file, skip first row
         for c in commits:
             try:
                 csv__writer.writerow([
-                i['full_name'],
-                c['user'],
-                c['login'],
-                c['date']
-            ])
+                    i['full_name'],
+                    i['language'],
+                    c['user'],
+                    c['login'],
+                    c['date']
+                ])
             except UnicodeEncodeError, ue:
                 #TODO Handle unicode errors since csv lib doesn't like work with unicode
                 print str(ue)
