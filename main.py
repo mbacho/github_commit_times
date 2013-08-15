@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+__author__ = 'erico'
+
 from getopt import getopt
 from getopt import GetoptError
 
@@ -7,14 +9,11 @@ from sys import argv
 from sys import exit
 from sys import stdout
 
-from lib.fetcher import  process_repo
-from lib.fetcher import  write_commits
-from lib.fetcher import  extract_commits
-from lib.fetcher import  get_full_url
+from lib.fetcher import  Fetcher
 
-from lib.fetcher import  USER_REPO_LIST
-from lib.fetcher import  REPO_URL
-from lib.fetcher import  ALL_REPO_LIST
+from lib import  USER_REPO_LIST
+from lib import  REPO_URL
+from lib import  ALL_REPO_LIST
 
 
 def helpme(app_name):
@@ -65,12 +64,13 @@ def main(user='', repo='', logfile='', frmt='json'):
         else:
             game_over('no repo/user selected')
 
-    repo_url = get_full_url(repo_url)
+    fetcher = Fetcher()
+    repo_url = fetcher.get_full_url(repo_url)
     repo_dets = None
     if single_repo:
-        repo_dets = process_repo(repo_url)
+        repo_dets = fetcher.process_repo(repo_url)
     else:
-        repo_dets = process_repo(repo_url, multiple=True)
+        repo_dets = fetcher.process_repo(repo_url, multiple=True)
 
     if logfile == '': #TODO use reponame if logfile is not present
         logfile = stdout
@@ -83,8 +83,8 @@ def main(user='', repo='', logfile='', frmt='json'):
     print 'gotten', len(repo_dets), 'repos'
 
     for i in repo_dets:
-        commits = extract_commits(i)
-        write_commits(logfile, i, commits) #TODO write file in JSON
+        commits = fetcher.extract_commits(i)
+        fetcher.write_commits(logfile, i, commits) #TODO write file in JSON
 
     if logfile != stdout:
         logfile.close()
