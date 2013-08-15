@@ -3,8 +3,7 @@
 .idea/*
 
 #compiled python files
-*.pyc
-*.pyo
+*.py[co]
 
 #log folder
 logs/*

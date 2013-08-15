@@ -1,133 +1,147 @@
 __author__ = 'erico'
 
-"""Functions to fetch data from github"""
-
-
 from sys import exit
 
 from urllib2 import urlopen
-from urllib2 import  HTTPError
+from urllib2 import HTTPError
 from json import loads
 
 from csv import writer
 from csv import QUOTE_MINIMAL
 
-
-BASE_URL = "https://api.github.com/"
-
-USER_URL = "users/{user}"
-USER_REPO_LIST = "users/{user}/repos"
-
-REPO_URL = "repos/{full_name}"
-ALL_REPO_LIST = "repositories"
-
-REPO_COMMIT_LIST = "repos/{full_name}/commits"#"/repos/{owner}/{repo}/commits"
-RAW_COMMIT = "{commit_href}.patch"
-
-def get_full_url(part_url):
-    """Append base url to partial url"""
-    return BASE_URL + part_url
+from lib import BASE_URL
+from lib import RAW_COMMIT
+from lib import REPO_COMMIT_LIST
+from lib import COMMIT_DETAILS
 
 
-def helpme(app_name):
-    """Help for this program"""
-    print "\nUsage : {0} [-h] [-u|r][user|repo] [-l][logfile] [-c]".format(app_name)
-    print "-h --help   Show this help"
-    print "-u --user   Get commit stats for the user"
-    print "-r --repo   Get commit stats for the repo."
-    print "-c --csv    Log data in file as csv. If not specified, defaults to json"
-    print "Repo name is of the form 'user/repo' when the user isn't specified via -u"
-    print "Repo name is of the form 'repo' when the user is specified via -u"
-    print "-l --log    Log commit stats to file"
-    print "If user and repo are not specified, defaults to all repositories"
-    print "If both user and repo are specified, the repo would be assumed to be "
-    exit()
-
-
-def get_from_net(url):
-    """Return string from net resource
-    :param url:
+class Fetcher(object):
     """
-    print 'opening', url
-    ty = urlopen(url)
-    print 'reading...'
-    s = ty.read()
-    print 'done'
-    return s
+    Fetch data from github
+    """
+
+    def get_full_url(self, part_url):
+        """Append base url to partial url"""
+        return BASE_URL + part_url
 
 
-def get_commit_datetimezone(html_url):
-    url = RAW_COMMIT.format(commit_href=html_url)
-    print 'getting tz for [{0}]'.format(url)
-    try:
-        raw_commit = urlopen(url)
-        raw_commit.readline()  #skip first line
-        raw_commit.readline()  #skip second line
-        date_info = raw_commit.readline()
-        return date_info[6:-1]
-    except HTTPError, e:
-        print 'error for',url
-        print str(e)
-        return ''
+    def get_from_net(self, url):
+        """Return string from net resource
+        :param url:
+        """
+        print 'opening', url
+        ty = urlopen(url)
+        print 'reading...'
+        s = ty.read()
+        print 'done'
+        return s
 
 
-def extract_commits(repo_obj):
-    """Extract repo commits from details in the repo object"""
-    url = REPO_COMMIT_LIST.format(full_name=repo_obj['full_name'])
-    url = get_full_url(url)
-    json_data = loads(get_from_net(url))
-    commits = []
-    for i in json_data:
-        committer = i['committer']
-        comm = {#TODO Fetch user's location in USER_URL
-                'date' :  get_commit_datetimezone(i['html_url']),
-                'user': i['commit']['committer']['name'],
-                'login': ''
-                #TODO get commit's html_url then append '.patch' then get third line with timezone info
-                #TODO load date string into datetime with format e.g. mm-yy-tt
-        }
-        if committer is not None:
-            comm['login'] = committer['login']
-
-        commits.append(comm)
-    return commits
-
-
-def write_commits(logfile, repo, commits):
-    csv__writer = writer(logfile, delimiter=',', quoting=QUOTE_MINIMAL)
-    #output format : reponame, language, committer, login, time, timezone
-    #csv__writer.writerow(['reponame', 'language', 'committer', 'login', 'time'])
-
-    for c in commits:
+    def get_commit_datetimezone(self, html_url):
+        url = RAW_COMMIT.format(commit_href=html_url)
+        print 'getting tz for [{0}]'.format(url)
         try:
-            csv__writer.writerow([
-                repo['full_name'],
-                repo['language'],
-                c['user'],
-                c['login'],
-                c['date'],
-            ])
-        except UnicodeEncodeError, ue:
-            #TODO Handle unicode errors since csv lib doesn't like to work with unicode
-            print str(ue)
-            continue
+            raw_commit = urlopen(url)
+            raw_commit.readline()  #skip first line
+            raw_commit.readline()  #skip second line
+            date_info = raw_commit.readline()
+            return date_info[6:-1]
+        except HTTPError, e:
+            print 'error for', url
+            print str(e)
+            return ''
+
+    def get_commit_change_stats(self, commit_url='', full_name='', commit_sha=''):
+        """
+        Gets stats about additions and deletions
+        Commit url to be used can be set via commit_url or generated using both full_name and commit_sha
+        If all parameters are set, commit_url will be used, the others ignored
+
+        :param commit_url Absolute path to commit
+        :param full_name Full name of repo i.e. user/reponame
+        :param commit_sha Sha of the commit
+
+        :returns dictionary with 'additions', 'deletions' as keys
+        """
+        if commit_url == '' and (commit_sha == '' and full_name == ''):
+            raise BaseException('commit url could not be generated. Commit url, commit sha and full name not set')
+            return None
+        url = commit_url
+        if url == '':
+            url = COMMIT_DETAILS.format(commit_sha=commit_sha, full_name=full_name)
+            url = self.get_full_url(url)
+
+        json_data = loads(self.get_from_net(url))
+        stats = {'additions': 0, 'deletions': 0}
+        if 'stats' in json_data:
+            stats['additions'] = json_data['stats']['additions']
+            stats['deletions'] = json_data['stats']['deletions']
+
+        return stats
+
+    def extract_commits(self, repo_obj):
+        """Extract repo commits from details in the repo object"""
+        url = REPO_COMMIT_LIST.format(full_name=repo_obj['full_name'])
+        url = self.get_full_url(url)
+        json_data = loads(self.get_from_net(url))
+        commits = []
+        for i in json_data:
+            committer = i['committer']
+            #stats = self.get_commit_change_stats(full_name=repo_obj['full_name'], commit_sha=i['sha'])
+            stats = self.get_commit_change_stats(commit_url=i['url'])
+            comm = {#TODO Fetch user's location in USER_URL
+                    'date': self.get_commit_datetimezone(i['html_url']),
+                    'user': i['commit']['committer']['name'],
+                    'login': '',
+                    'additions': stats['additions'],
+                    'deletions': stats['deletions']
+            }
+            if committer is not None:
+                comm['login'] = committer['login']
+
+            commits.append(comm)
+        return commits
 
 
-def process_repo(url, multiple=False):
-    """Return an array of repo details. If url is for one repo, the result is an array of one element"""
-    json_data = loads(get_from_net(url))
-    if not multiple: json_data = [json_data]
-    repo_dets = []
-    for i in json_data:
-        dets = {
-            'full_name': i['full_name'],
-            'name': i['name'],
-            'fork': i['fork'],
-            'url': i['url'],
-            'language': '',
-            'created': ''
-        }
-        if 'language' in i: dets['language'] = i['language']
-        if 'created_at' in i: dets['created'] = i['created_at']
-        repo_dets.append(dets)
-    return repo_dets
+    def write_commits(self, logfile, repo, commits):
+        """
+        write csv to file in the format given below
+        output format : reponame, language, committer, login, time + timezone, additions, deletions
+        """
+        csv__writer = writer(logfile, delimiter=',', quoting=QUOTE_MINIMAL)
+
+        for c in commits:
+            try:
+                csv__writer.writerow([
+                    repo['full_name'],
+                    repo['language'],
+                    c['user'],
+                    c['login'],
+                    c['date'],
+                    c['additions'],
+                    c['deletions']
+                ])
+            except UnicodeEncodeError, ue:
+                #TODO Handle unicode errors since csv lib doesn't like to work with unicode
+                print str(ue)
+                continue
+
+
+    def process_repo(self, url, multiple=False):
+        """Return an array of repo details. If url is for one repo, the result is an array of one element"""
+        json_data = loads(self.get_from_net(url))
+        if not multiple: json_data = [json_data]
+        repo_dets = []
+        for i in json_data:
+            dets = {
+                'full_name': i['full_name'],
+                'name': i['name'],
+                'fork': i['fork'],
+                'url': i['url'],
+                'language': '',
+                'created': ''
+            }
+            if 'language' in i: dets['language'] = i['language']
+            if 'created_at' in i: dets['created'] = i['created_at']
+            repo_dets.append(dets)
+        return repo_dets
