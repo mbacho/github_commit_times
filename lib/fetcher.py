@@ -1,7 +1,5 @@
 __author__ = 'erico'
 
-from sys import exit
-
 from urllib2 import urlopen
 from urllib2 import HTTPError
 from json import loads
