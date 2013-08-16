@@ -31,6 +31,7 @@ class FetcherTest(unittest.TestCase):
 		result = self.fetcher.process_repo("")
 		self.assertIsInstance(result, type(list()), "Result was not a list")
 		self.assertNotEqual(len(result), 0, "List is empty")
+		self.assertEqual(len(result), 1, "List has extra items")
 
 	def tearDown(self):
 		self.fetcher = None
