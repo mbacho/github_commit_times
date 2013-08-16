@@ -33,6 +33,13 @@ class FetcherTest(unittest.TestCase):
 		self.assertNotEqual(len(result), 0, "List is empty")
 		self.assertEqual(len(result), 1, "List has extra items")
 		self.assertIsInstance(result[0], type(dict()), "List item is not a dictionary: "+repr(result[0]))
+		
+		self.assertIn("full_name", result[0], "Full name missing from dictionary: "+ repr(result[0]))
+		self.assertIn("name", result[0], "Name missing from dictionary: "+ repr(result[0]))
+		self.assertIn("fork", result[0], "Fork missing from dictionary: "+ repr(result[0]))
+		self.assertIn("url", result[0], "URL missing from dictionary: "+ repr(result[0]))
+		self.assertIn("language", result[0], "Language missing from dictionary: "+ repr(result[0]))
+		self.assertIn("created", result[0], "Created missing from dictionary: "+ repr(result[0]))
 
 	def tearDown(self):
 		self.fetcher = None
