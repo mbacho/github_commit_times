@@ -30,6 +30,7 @@ class FetcherTest(unittest.TestCase):
 		self.fetcher.get_from_net = Mock(return_value=self.get_data_file("octocat.Spoon-Knife.json"))
 		result = self.fetcher.process_repo("")
 		self.assertIsInstance(result, type(list()), "Result was not a list")
+		self.assertNotEqual(len(result), 0, "List is empty")
 
 	def tearDown(self):
 		self.fetcher = None
