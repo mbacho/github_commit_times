@@ -6,6 +6,8 @@ import lib.fetcher
 import unittest
 
 class FetcherTest(unittest.TestCase):
+	""" testing for success of Fetcher functions """
+	
 	def setUp(self):
 		self.fetcher = lib.fetcher.Fetcher()
 
