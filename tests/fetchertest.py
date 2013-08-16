@@ -1,4 +1,6 @@
-__author__ = "caninemwenja"
+#!/usr/bin/env python
+
+__author__ = "Canine Mwenja"
 
 import lib.fetcher
 import unittest
