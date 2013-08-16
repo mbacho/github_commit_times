@@ -39,10 +39,10 @@ def game_over(msg, code=1):
 
 def main(user='', repo='', logfile='', frmt='json'):
     """Entry point
-    :param user:
-    :param repo:
-    :param logfile:
-    :param frmt:
+    :param user: username
+    :param repo: reponame (if username is provided), fullname (if username isn't provided) 
+    :param logfile: logfile 
+    :param frmt: csv, json (not yet implemented, only does csv)
     """
     repo_url = ''
     single_repo = False #flag : if fetching one repo (True) or many (False)
@@ -53,7 +53,7 @@ def main(user='', repo='', logfile='', frmt='json'):
     elif user != '':
         repo_url = USER_REPO_LIST.format(user=user)
         single_repo = False
-    elif repo != '':
+    elif repo != '': #fullname of repo is provided
         repo_url = REPO_URL.format(full_name=repo)
         single_repo = True
     else:
