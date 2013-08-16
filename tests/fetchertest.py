@@ -2,11 +2,11 @@
 
 __author__ = "Canine Mwenja"
 
-import lib.fetcher
 import unittest
 import os
 
 from mock import Mock
+from lib.fetcher import Fetcher
 
 class FetcherTest(unittest.TestCase):
 	""" testing for success of Fetcher functions """
@@ -20,7 +20,7 @@ class FetcherTest(unittest.TestCase):
 		return data
 
 	def setUp(self):
-		self.fetcher = lib.fetcher.Fetcher()
+		self.fetcher = Fetcher()
 
 	def test_get_full_url(self):
 		control_data = "https://api.github.com/helloworld"
