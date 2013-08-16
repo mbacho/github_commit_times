@@ -32,6 +32,7 @@ class FetcherTest(unittest.TestCase):
 		self.assertIsInstance(result, type(list()), "Result was not a list")
 		self.assertNotEqual(len(result), 0, "List is empty")
 		self.assertEqual(len(result), 1, "List has extra items")
+		self.assertIsInstance(result[0], type(dict()), "List item is not a dictionary: "+repr(result[0]))
 
 	def tearDown(self):
 		self.fetcher = None
