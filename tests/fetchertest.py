@@ -2,11 +2,11 @@
 
 __author__ = "Canine Mwenja"
 
-import lib.fetcher
 import unittest
 import os
 
 from mock import Mock
+from lib.fetcher import Fetcher
 
 class FetcherTest(unittest.TestCase):
 	""" testing for success of Fetcher functions """
@@ -20,11 +20,12 @@ class FetcherTest(unittest.TestCase):
 		return data
 
 	def setUp(self):
-		self.fetcher = lib.fetcher.Fetcher()
+		self.fetcher = Fetcher()
 
 	def test_get_full_url(self):
 		control_data = "https://api.github.com/helloworld"
-		self.assertEqual(control_data, self.fetcher.get_full_url("helloworld"))
+		result_url = self.fetcher.get_full_url("helloworld")
+		self.assertEqual(control_data, result_url, "Full URL does not match: "+control_data+" vs "+result_url)
 
 	def test_process_repo_single_repo(self):
 		self.fetcher.get_from_net = Mock(return_value=self.get_data_file("octocat.Spoon-Knife.json"))
