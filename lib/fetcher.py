@@ -11,7 +11,8 @@ from lib import BASE_URL
 from lib import RAW_COMMIT
 from lib import REPO_COMMIT_LIST
 from lib import COMMIT_DETAILS
-
+from lib import ALL_REPO_LIST
+from lib import DEFAULT_MAX_PUBLIC_REPOS
 
 class Fetcher(object):
     """
@@ -127,7 +128,7 @@ class Fetcher(object):
 
     def process_repo(self, url, multiple=False):
         """Return an array of repo details. If url is for one repo, the result is an array of one element"""
-        json_data = loads(self.get_from_net(url))
+        json_data = loads(self.get_from_net(url))  #TODO add code to detect error messages in JSON from API
         if not multiple: json_data = [json_data]
         repo_dets = []
         for i in json_data:
@@ -137,9 +138,25 @@ class Fetcher(object):
                 'fork': i['fork'],
                 'url': i['url'],
                 'language': '',
-                'created': ''
+                'created': '',
+                'id': i["id"]  #for use in pagination
             }
             if 'language' in i: dets['language'] = i['language']
             if 'created_at' in i: dets['created'] = i['created_at']
             repo_dets.append(dets)
         return repo_dets
+
+
+    def get_public_repos(self, max_repos=DEFAULT_MAX_PUBLIC_REPOS):
+        """Gets all the public repos"""
+        since = 0
+        repo_count = 0
+        repos = []
+        while repo_count < max_repos:
+            temp = self.process_repo(self.get_full_url(ALL_REPO_LIST.format(since=since)), True)
+            repos.extend(temp)
+            repo_count = len(repos)  #TODO count if repos <= max_repos
+            print 'repos =', len(repos), 'temp=', len(temp)
+            since = temp[-1]['id']
+
+        return repos

@@ -14,7 +14,7 @@ from lib.fetcher import  Fetcher
 from lib import  USER_REPO_LIST
 from lib import  REPO_URL
 from lib import  ALL_REPO_LIST
-
+from lib import DEFAULT_MAX_PUBLIC_REPOS
 
 def helpme(app_name):
     """Help for this program"""
@@ -45,7 +45,9 @@ def main(user='', repo='', logfile='', frmt='json'):
     :param frmt: csv, json (not yet implemented, only does csv)
     """
     repo_url = ''
-    single_repo = False #flag : if fetching one repo (True) or many (False)
+    single_repo = False  #flag : if fetching one repo (True) or many (False)
+    public_repos = False  #multiple repos are public repos
+    count = 0  #max repos to fetch if public_repos is selected
     if user != '' and repo != '':
         fullname = "{0}/{1}".format(user, repo)
         repo_url = REPO_URL.format(full_name=fullname)
@@ -53,14 +55,24 @@ def main(user='', repo='', logfile='', frmt='json'):
     elif user != '':
         repo_url = USER_REPO_LIST.format(user=user)
         single_repo = False
-    elif repo != '': #fullname of repo is provided
+    elif repo != '':  #fullname of repo is provided
         repo_url = REPO_URL.format(full_name=repo)
         single_repo = True
-    else:
+    else:  #fetch public repos
         ans = raw_input('fetch all repos [y/n]? ')
         if ans in ('y', 'Y'):
+            count = raw_input('maximum number of repos [{0}]? '.format(DEFAULT_MAX_PUBLIC_REPOS))
+            if count == '':
+                count = DEFAULT_MAX_PUBLIC_REPOS
+            else:
+                try:
+                    count = int(count)
+                except:
+                    print 'Invalid integer'
+
             repo_url = ALL_REPO_LIST
             single_repo = False
+            public_repos = True
         else:
             game_over('no repo/user selected')
 
@@ -69,6 +81,8 @@ def main(user='', repo='', logfile='', frmt='json'):
     repo_dets = None
     if single_repo:
         repo_dets = fetcher.process_repo(repo_url)
+    elif public_repos:
+        repo_dets = fetcher.get_public_repos(count)
     else:
         repo_dets = fetcher.process_repo(repo_url, multiple=True)
 
@@ -128,4 +142,3 @@ if __name__ == '__main__':
         main(repo=check_repo, user=check_user, logfile=log_file, frmt=frmt)
     else:
         main(logfile=log_file, frmt=frmt)
-
